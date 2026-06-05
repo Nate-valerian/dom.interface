@@ -6,10 +6,10 @@ DOM Control quick start
    http://PC_WIFI_IPV4:8000/dom_pro2.html
 
 Current example:
-   http://192.168.1.5:8000/dom_pro2.html
+  
 
 Resolume API is controlled from the Windows PC through:
-   http://127.0.0.1:8080/api/v1
+
 
 If the iPad opens the page but clips do not play:
 - Restart start_dom_control.bat after code changes.
