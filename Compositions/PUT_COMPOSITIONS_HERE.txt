@@ -1,0 +1,3 @@
+Put Resolume .avc composition files in this folder, then press "Refresh compositions" in DOM Control.
+
+You can also list exact composition paths in ../compositions.json.

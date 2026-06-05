@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>DOM Control / Управление DOM</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+    --bg: #0f1813;
+    --panel: #17231d;
+    --card: #1f3028;
+    --active: #3b6248;
+    --pressed: #4b795b;
+    --text: #e6e1d6;
+    --muted: #aeb8aa;
+    --accent: #8fa382;
+    --danger: #b87568;
+}
+
+body.light {
+    --bg: #e5dcd2;
+    --panel: #eee7dd;
+    --card: #f8f3ec;
+    --active: #c8d4c0;
+    --pressed: #b8c6b0;
+    --text: #242724;
+    --muted: #606a5d;
+    --accent: #7a8b70;
+    --danger: #9f5f52;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', Arial, sans-serif;
+    transition: background 0.4s, color 0.4s;
+}
+
+.header {
+    text-align: center;
+    padding: 14px 10px 8px;
+}
+
+.logo {
+    font-family: 'Cinzel', serif;
+    font-size: 34px;
+    letter-spacing: 6px;
+}
+
+.composition-name {
+    min-height: 20px;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.preview {
+    text-align: center;
+    padding: 8px 10px 12px;
+}
+
+.preview img {
+    display: none;
+    width: min(260px, 84vw);
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 1px solid var(--accent);
+    background: var(--panel);
+}
+
+.preview img.has-image {
+    display: inline-block;
+}
+
+.current-name {
+    min-height: 22px;
+    margin-top: 6px;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    flex-wrap: wrap;
+}
+
+button, .button {
+    min-height: 38px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--accent);
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+.deck-switcher {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 10px 12px;
+    flex-wrap: wrap;
+}
+
+.deck-switcher:empty {
+    display: none;
+}
+
+.deck-switcher button {
+    min-width: 120px;
+}
+
+.deck-switcher button.active {
+    background: var(--active);
+    border-color: var(--accent);
+}
+
+.composition-switcher {
+    display: grid;
+    gap: 10px;
+    padding: 6px 10px 10px;
+}
+
+.composition-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 10px;
+}
+
+.composition-list:empty {
+    display: none;
+}
+
+.composition-list button {
+    min-height: 68px;
+    text-align: left;
+}
+
+.composition-list button.active {
+    background: var(--active);
+    border-color: var(--accent);
+}
+
+.composition-title {
+    display: block;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.composition-meta {
+    display: block;
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 11px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.composition-empty {
+    color: var(--muted);
+    text-align: center;
+    font-size: 13px;
+}
+
+.composition-actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.status {
+    min-height: 18px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.status.error {
+    color: var(--danger);
+}
+
+.launch-warning {
+    display: none;
+    max-width: 860px;
+    margin: 4px auto 12px;
+    padding: 10px 12px;
+    border: 1px solid var(--danger);
+    border-radius: 10px;
+    color: var(--text);
+    background: color-mix(in srgb, var(--danger), transparent 82%);
+    text-align: center;
+    font-size: 13px;
+}
+
+.launch-warning.visible {
+    display: block;
+}
+
+.layers {
+    display: grid;
+    gap: 14px;
+    padding: 10px;
+}
+
+.layer {
+    background: var(--panel);
+    border: 1px solid color-mix(in srgb, var(--accent), transparent 45%);
+    border-radius: 12px;
+    padding: 10px;
+}
+
+.layer-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.layer-title {
+    min-width: 0;
+}
+
+.layer-title strong {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.layer-title span {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.opacity {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.opacity input {
+    width: min(190px, 36vw);
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+}
+
+.card {
+    overflow: hidden;
+    background: var(--card);
+    border-radius: 10px;
+    border: 1px solid color-mix(in srgb, var(--accent), transparent 35%);
+    transition: background 0.2s, transform 0.2s, border-color 0.2s;
+}
+
+.card.active {
+    background: var(--active);
+    border-color: var(--accent);
+}
+
+.card.pressed {
+    background: var(--pressed);
+    transform: scale(0.97);
+}
+
+.thumb {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    display: block;
+    background: #101611;
+}
+
+.clip-button {
+    width: 100%;
+    min-height: 48px;
+    border: 0;
+    border-radius: 0;
+    padding: 8px;
+    background: transparent;
+    color: var(--text);
+    overflow-wrap: anywhere;
+}
+
+.empty {
+    padding: 24px 10px;
+    text-align: center;
+    color: var(--muted);
+}
+
+@media (max-width: 620px) {
+    .layer-head {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .opacity {
+        justify-content: space-between;
+    }
+
+    .opacity input {
+        width: 55vw;
+    }
+}
+</style>
+</head>
+<body>
+<div class="header">
+    <div class="logo">DOM</div>
+    <div class="composition-name" id="compositionName"></div>
+</div>
+
+<div class="composition-switcher">
+    <div class="composition-list" id="compositionList" aria-label="Composition switcher"></div>
+    <div class="composition-actions">
+        <button type="button" onclick="refreshCompositions()">Refresh compositions / Обновить композиции</button>
+    </div>
+</div>
+
+<div class="deck-switcher" id="deckSwitcher" aria-label="Deck switcher"></div>
+
+<div class="preview">
+    <img id="livePreview" alt="">
+    <div class="current-name" id="currentName"></div>
+</div>
+
+<div class="controls">
+    <button type="button" onclick="setTheme('light')">Day / День</button>
+    <button type="button" onclick="setTheme('dark')">Evening / Вечер</button>
+    <button type="button" onclick="forceRefresh()">Refresh / Обновить</button>
+</div>
+
+<div class="status" id="status">Connecting... / Подключение...</div>
+<div class="launch-warning" id="launchWarning"></div>
+<div class="layers" id="layers"></div>
+
+<script>
+const RESOLUME_IP = "192.168.1.5";
+const PORT = "8080";
+const API = `http://${RESOLUME_IP}:${PORT}/api/v1`;
+const DOM_SERVER = window.location.protocol === "http" ? window.location.origin : "http://127.0.0.1:8000";
+const OPENED_FROM_FILE = window.location.protocol === "file:";
+const POLL_MS = 1000;
+const ACTIVE_COMPOSITION_KEY = "domControlActiveCompositionPath";
+
+let lastSignature = "";
+let lastComposition = null;
+let lastDecks = [];
+let deckFetchFailed = false;
+let knownCompositions = [];
+let compositionsFetchFailed = false;
+let activeCompositionPath = readStoredValue(ACTIVE_COMPOSITION_KEY);
+
+function setTheme(theme) {
+    document.body.className = theme === "light" ? "light" : "";
+}
+
+function collection(value) {
+    if (Array.isArray(value)) return value;
+    if (value && typeof value === "object" && Array.isArray(value.value)) return value.value;
+    if (value && typeof value === "object") return Object.values(value).filter(item => item && typeof item === "object");
+    return [];
+}
+
+function fieldValue(source, key) {
+    if (!source || typeof source !== "object") return undefined;
+    const value = source[key];
+    if (value && typeof value === "object" && "value" in value) return value.value;
+    return value;
+}
+
+function fieldText(source, key) {
+    const value = fieldValue(source, key);
+    return typeof value === "string" ? value : "";
+}
+
+function fieldBool(source, key) {
+    const value = fieldValue(source, key);
+    if (typeof value === "boolean") return value;
+    if (typeof value === "string") return value.toLowerCase() === "true";
+    if (typeof value === "number") return value !== 0;
+    return Boolean(value);
+}
+
+function readStoredValue(key) {
+    try {
+        return localStorage.getItem(key) || "";
+    } catch (error) {
+        return "";
+    }
+}
+
+function storeValue(key, value) {
+    try {
+        if (value) {
+            localStorage.setItem(key, value);
+        } else {
+            localStorage.removeItem(key);
+        }
+    } catch (error) {
+    }
+}
+
+function clipNumber(clip, index) {
+    return index + 1;
+}
+
+function layerNumber(layer, index) {
+    return index + 1;
+}
+
+function deckNumber(deck, index) {
+    return index + 1;
+}
+
+function clipName(clip, index) {
+    return fieldText(clip, "name") || `Clip / Клип ${index + 1}`;
+}
+
+function layerName(layer, index) {
+    return fieldText(layer, "name") || `Layer / Слой ${index + 1}`;
+}
+
+function deckName(deck, index) {
+    return fieldText(deck, "name") || `Deck / Дека ${index + 1}`;
+}
+
+function decksFrom(data) {
+    const nestedDecks = collection(data && data.decks);
+    return nestedDecks.length ? nestedDecks : collection(data);
+}
+
+function compositionPath(item) {
+    if (typeof item === "string") return item;
+    return fieldText(item, "path") || fieldText(item, "file") || fieldText(item, "url") || "";
+}
+
+function compositionTitle(item, index) {
+    if (typeof item === "string") return fileTitle(item) || `Composition ${index + 1}`;
+    return fieldText(item, "name") || fileTitle(compositionPath(item)) || `Composition ${index + 1}`;
+}
+
+function compositionMeta(item) {
+    if (typeof item === "string") return item;
+    return fieldText(item, "modifiedText") || fieldText(item, "folder") || compositionPath(item);
+}
+
+function fileTitle(path) {
+    return String(path || "").split(/[\\/]/).pop().replace(/\.[^.]+$/, "");
+}
+
+function normalizeCompositionName(value) {
+    return String(value || "").trim().replace(/\.[^.]+$/, "").toLowerCase();
+}
+
+function activeComposition(data) {
+    const currentName = normalizeCompositionName(fieldText(data, "name"));
+
+    const namedComposition = knownCompositions.find((composition, compositionIndex) => {
+        const path = compositionPath(composition);
+        const title = normalizeCompositionName(compositionTitle(composition, compositionIndex));
+        const fileName = normalizeCompositionName(fileTitle(path));
+        return Boolean(currentName && (title === currentName || fileName === currentName));
+    });
+
+    if (namedComposition) return namedComposition;
+
+    return knownCompositions.find(composition => {
+        const path = compositionPath(composition);
+        return Boolean(activeCompositionPath && path === activeCompositionPath);
+    }) || null;
+}
+
+function activeCompositionLabel(data) {
+    const matched = activeComposition(data);
+    if (matched) return compositionTitle(matched, knownCompositions.indexOf(matched));
+    return fieldText(data, "name");
+}
+
+function thumbnailSrc(clip) {
+    const thumbnail = fieldValue(clip, "thumbnail");
+    if (typeof thumbnail !== "string" || !thumbnail) return "";
+    if (thumbnail.startsWith("data:")) return thumbnail;
+    return `data:image/png;base64,${thumbnail}`;
+}
+
+function compositionSignature(data) {
+    const layers = collection(data.layers);
+    const decks = collection(data.decks);
+    return JSON.stringify({
+        id: fieldValue(data, "id") || "",
+        name: fieldText(data, "name") || "",
+        activeCompositionPath,
+        compositions: knownCompositions.map((composition, compositionIndex) => ({
+            name: compositionTitle(composition, compositionIndex),
+            path: compositionPath(composition)
+        })),
+        decks: decks.map((deck, deckIndex) => ({
+            id: deckNumber(deck, deckIndex),
+            resolumeId: fieldValue(deck, "id") || "",
+            name: deckName(deck, deckIndex),
+            active: isActiveDeck(data, deck, deckIndex)
+        })),
+        layers: layers.map((layer, layerIndex) => ({
+            id: layerNumber(layer, layerIndex),
+            resolumeId: fieldValue(layer, "id") || "",
+            name: layerName(layer, layerIndex),
+            clips: collection(layer.clips).map((clip, clipIndex) => ({
+                id: clipNumber(clip, clipIndex),
+                resolumeId: fieldValue(clip, "id") || "",
+                name: clipName(clip, clipIndex)
+            }))
+        }))
+    });
+}
+
+function setStatus(message, isError) {
+    const status = document.getElementById("status");
+    status.innerText = message;
+    status.classList.toggle("error", Boolean(isError));
+}
+
+function setLaunchWarning(message) {
+    const warning = document.getElementById("launchWarning");
+    warning.innerText = message || "";
+    warning.classList.toggle("visible", Boolean(message));
+}
+
+async function redirectToDomServerWhenAvailable() {
+    if (!OPENED_FROM_FILE) return;
+
+    try {
+        const response = await fetch(`${DOM_SERVER}/dom/compositions`, { cache: "no-store" });
+        if (response.ok) {
+            window.location.href = `${DOM_SERVER}/dom_pro.html`;
+            return;
+        }
+    } catch (error) {
+    }
+
+    setLaunchWarning("This page is opened as a file, so saved .avc compositions cannot be scanned. Run start_dom_control.bat and use http://127.0.0.1:8000/dom_pro.html. / Страница открыта как файл, поэтому сохраненные .avc композиции не сканируются. Запустите start_dom_control.bat и откройте http://127.0.0.1:8000/dom_pro.html.");
+}
+
+function renderComposition(data) {
+    const container = document.getElementById("layers");
+    const layers = collection(data.layers);
+    const compositionName = activeCompositionLabel(data);
+
+    document.getElementById("compositionName").innerText =
+        compositionName ? `Current composition / Текущая композиция: ${compositionName}` : "Composition loaded / Композиция загружена";
+
+    renderCompositionSwitcher(data);
+    renderDeckSwitcher(data);
+
+    if (!layers.length) {
+        container.innerHTML = '<div class="empty">No layers found in Resolume. / Слои в Resolume не найдены.</div>';
+        return;
+    }
+
+    container.innerHTML = "";
+
+    layers.forEach((layer, layerIndex) => {
+        const layerNo = layerNumber(layer, layerIndex);
+        const clips = collection(layer.clips);
+        const section = document.createElement("section");
+        section.className = "layer";
+        section.id = `layer_${layerNo}`;
+
+        const title = document.createElement("div");
+        title.className = "layer-title";
+        title.innerHTML = `<strong>${escapeHtml(layerName(layer, layerIndex))}</strong><span>${clips.length} clips / клипов</span>`;
+
+        const opacity = document.createElement("label");
+        opacity.className = "opacity";
+        opacity.innerHTML = `Opacity / Прозрачность <input type="range" min="0" max="1" step="0.01" value="1">`;
+        opacity.querySelector("input").addEventListener("input", event => {
+            setLayerOpacity(layerNo, event.target.value);
+        });
+
+        const head = document.createElement("div");
+        head.className = "layer-head";
+        head.append(title, opacity);
+
+        const grid = document.createElement("div");
+        grid.className = "grid";
+
+        clips.forEach((clip, clipIndex) => {
+            const clipNo = clipNumber(clip, clipIndex);
+            const name = clipName(clip, clipIndex);
+            const card = document.createElement("div");
+            card.className = "card";
+            card.id = cardId(layerNo, clipNo);
+
+            const img = document.createElement("img");
+            img.className = "thumb";
+            img.id = imageId(layerNo, clipNo);
+            img.alt = "";
+
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "clip-button";
+            button.innerText = name;
+            button.addEventListener("touchstart", () => press(layerNo, clipNo), { passive: true });
+            button.addEventListener("touchend", () => release(layerNo, clipNo), { passive: true });
+            button.addEventListener("click", () => trigger(layerNo, clipNo));
+
+            card.append(img, button);
+            grid.appendChild(card);
+        });
+
+        section.append(head, grid);
+        container.appendChild(section);
+    });
+
+    updateState(data);
+}
+
+function renderDeckSwitcher(data) {
+    const switcher = document.getElementById("deckSwitcher");
+    const decks = collection(data.decks);
+
+    switcher.innerHTML = "";
+
+    if (decks.length <= 1) return;
+
+    decks.forEach((deck, deckIndex) => {
+        const deckNo = deckNumber(deck, deckIndex);
+        const button = document.createElement("button");
+        button.type = "button";
+        button.innerText = deckName(deck, deckIndex);
+        button.classList.toggle("active", isActiveDeck(data, deck, deckIndex));
+        button.addEventListener("click", () => selectDeck(deckNo));
+        switcher.appendChild(button);
+    });
+}
+
+function renderCompositionSwitcher(data) {
+    const list = document.getElementById("compositionList");
+    const currentLabel = activeCompositionLabel(data);
+
+    list.innerHTML = "";
+
+    if (!knownCompositions.length && currentLabel) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.disabled = true;
+        button.className = "active";
+        button.setAttribute("aria-current", "true");
+        button.innerHTML = `<span class="composition-title">${escapeHtml(currentLabel)}</span><span class="composition-meta">Current composition / Текущая композиция</span>`;
+        list.appendChild(button);
+        const empty = document.createElement("div");
+        empty.className = "composition-empty";
+        empty.innerText = OPENED_FROM_FILE && compositionsFetchFailed
+            ? "Opened as a file. Run start_dom_control.bat so DOM can scan the Compositions folder. / Открыто как файл. Запустите start_dom_control.bat, чтобы DOM мог сканировать папку Compositions."
+            : "No saved composition files found. Add .avc files to the Compositions folder or composition_folders.json. / Сохраненные композиции не найдены.";
+        list.appendChild(empty);
+        return;
+    }
+
+    knownCompositions.forEach((composition, compositionIndex) => {
+        const path = compositionPath(composition);
+        const name = compositionTitle(composition, compositionIndex);
+        const isActive = activeComposition(data) === composition;
+        if (!path && !name) return;
+
+        const button = document.createElement("button");
+        button.type = "button";
+        button.innerHTML = `<span class="composition-title">${escapeHtml(name)}</span><span class="composition-meta">${escapeHtml(compositionMeta(composition))}</span>`;
+        button.classList.toggle("active", isActive);
+        if (isActive) button.setAttribute("aria-current", "true");
+        button.addEventListener("click", () => openComposition(path));
+        list.appendChild(button);
+    });
+}
+
+function isActiveDeck(data, deck, deckIndex) {
+    if (fieldBool(deck, "selected") || fieldBool(deck, "active")) return true;
+
+    const currentDeck = data.deck || data.activeDeck || data.currentDeck;
+    const currentDeckId = fieldValue(currentDeck, "id");
+    const deckId = fieldValue(deck, "id");
+    if (currentDeckId !== undefined && deckId !== undefined) return currentDeckId === deckId;
+
+    const currentDeckName = fieldText(currentDeck, "name");
+    if (currentDeckName) return currentDeckName === deckName(deck, deckIndex);
+
+    const currentDeckIndex = fieldValue(data, "deck_index") ?? fieldValue(data, "deckIndex");
+    if (Number.isFinite(Number(currentDeckIndex))) return Number(currentDeckIndex) === deckIndex + 1;
+
+    return deckIndex === 0;
+}
+
+function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+    }[char]));
+}
+
+function cardId(layerNo, clipNo) {
+    return `clip_${layerNo}_${clipNo}`;
+}
+
+function imageId(layerNo, clipNo) {
+    return `img_${layerNo}_${clipNo}`;
+}
+
+function press(layerNo, clipNo) {
+    const card = document.getElementById(cardId(layerNo, clipNo));
+    if (card) card.classList.add("pressed");
+}
+
+function release(layerNo, clipNo) {
+    const card = document.getElementById(cardId(layerNo, clipNo));
+    if (card) card.classList.remove("pressed");
+}
+
+async function trigger(layerNo, clipNo) {
+    await fetch(`${API}/composition/layers/${layerNo}/clips/${clipNo}/connect`, {
+        method: "POST"
+    });
+    await update();
+}
+
+async function setLayerOpacity(layerNo, value) {
+    await fetch(`${API}/composition/layers/${layerNo}/video/opacity`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ value: parseFloat(value) })
+    });
+}
+
+async function selectDeck(deckNo) {
+    try {
+        const response = await fetch(`${API}/composition/decks/${deckNo}/select`, {
+            method: "POST"
+        });
+        if (!response.ok) throw new Error(`Resolume API returned ${response.status}`);
+        lastSignature = "";
+        await update();
+    } catch (error) {
+        setStatus("Could not switch deck. / Не удалось переключить деку.", true);
+    }
+}
+
+async function openComposition(path) {
+    if (!path) return;
+    const previousActiveCompositionPath = activeCompositionPath;
+    activeCompositionPath = path;
+    storeValue(ACTIVE_COMPOSITION_KEY, activeCompositionPath);
+    lastSignature = "";
+    if (lastComposition) renderCompositionSwitcher(lastComposition);
+
+    try {
+        const response = await fetch(`${DOM_SERVER}/dom/compositions/open`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ path })
+        });
+        if (response.ok) {
+            lastSignature = "";
+            await update();
+            return;
+        }
+        await showCompositionOpenError(response);
+        activeCompositionPath = previousActiveCompositionPath;
+        storeValue(ACTIVE_COMPOSITION_KEY, activeCompositionPath);
+        if (lastComposition) renderCompositionSwitcher(lastComposition);
+        return;
+    } catch (error) {
+    }
+
+    try {
+        const response = await fetch(`${API}/composition/open`, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain" },
+            body: compositionFileUrl(path)
+        });
+        if (response.ok) {
+            lastSignature = "";
+            await update();
+            return;
+        }
+    } catch (error) {
+    }
+
+    activeCompositionPath = previousActiveCompositionPath;
+    storeValue(ACTIVE_COMPOSITION_KEY, activeCompositionPath);
+    setStatus("Could not open composition. / Не удалось открыть композицию.", true);
+    if (lastComposition) renderCompositionSwitcher(lastComposition);
+}
+
+function compositionFileUrl(path) {
+    const normalized = path.replaceAll("\\", "/").replace(/^file:\/\/\//i, "");
+    const encoded = normalized.split("/").map((segment, index) => {
+        if (index === 0 && /^[A-Za-z]:$/.test(segment)) return segment;
+        return encodeURIComponent(segment);
+    }).join("/");
+    return `file:///${encoded}`;
+}
+
+async function showCompositionOpenError(response) {
+    const payload = await response.json().catch(() => ({}));
+    if (response.status === 412) {
+        setStatus("Resolume precondition failed. The composition may be locked. / Условие Resolume не выполнено. Возможно, композиция заблокирована.", true);
+        return;
+    }
+    const detail = payload.error ? ` ${payload.error}` : "";
+    setStatus(`Could not open composition.${detail} / Не удалось открыть композицию.`, true);
+}
+
+function updateState(data) {
+    const layers = collection(data.layers);
+    let activeClip = null;
+
+    renderCompositionSwitcher(data);
+    renderDeckSwitcher(data);
+
+    layers.forEach((layer, layerIndex) => {
+        const layerNo = layerNumber(layer, layerIndex);
+        const clips = collection(layer.clips);
+
+        clips.forEach((clip, clipIndex) => {
+            const clipNo = clipNumber(clip, clipIndex);
+            const card = document.getElementById(cardId(layerNo, clipNo));
+            const img = document.getElementById(imageId(layerNo, clipNo));
+            const src = thumbnailSrc(clip);
+
+            if (card) card.classList.toggle("active", fieldBool(clip, "connected"));
+            if (img && src) img.src = src;
+            if (fieldBool(clip, "connected")) {
+                activeClip = { clip, layerName: layerName(layer, layerIndex) };
+            }
+        });
+    });
+
+    const preview = document.getElementById("livePreview");
+    const currentName = document.getElementById("currentName");
+
+    if (activeClip) {
+        const src = thumbnailSrc(activeClip.clip);
+        if (src) {
+            preview.src = src;
+            preview.classList.add("has-image");
+        }
+        currentName.innerText = `${activeClip.layerName}: ${clipName(activeClip.clip, 0) || "Active clip / Активный клип"}`;
+    } else {
+        preview.classList.remove("has-image");
+        currentName.innerText = "No active clip / Нет активного клипа";
+    }
+}
+
+async function fetchComposition() {
+    const response = await fetch(`${API}/composition`, { cache: "no-store" });
+    if (!response.ok) {
+        throw new Error(`Resolume API returned ${response.status}`);
+    }
+    const data = await response.json();
+    const decks = collection(data.decks);
+
+    await ensureCompositions();
+
+    if (decks.length) {
+        lastDecks = decks;
+        deckFetchFailed = false;
+    } else if (lastDecks.length) {
+        data.decks = lastDecks;
+    } else if (!deckFetchFailed) {
+        const fetchedDecks = await fetchDecks();
+        if (fetchedDecks.length) {
+            data.decks = fetchedDecks;
+            lastDecks = fetchedDecks;
+        } else {
+            deckFetchFailed = true;
+        }
+    }
+
+    return data;
+}
+
+async function ensureCompositions() {
+    if (compositionsFetchFailed) return;
+
+    const discovered = await fetchCompositions();
+    if (discovered.length) {
+        knownCompositions = mergeCompositions([], discovered);
+    } else {
+        compositionsFetchFailed = true;
+    }
+}
+
+async function fetchCompositions() {
+    const endpoints = [
+        `${DOM_SERVER}/dom/compositions`,
+        "compositions.json"
+    ];
+
+    for (const endpoint of endpoints) {
+        try {
+            const response = await fetch(endpoint, { cache: "no-store" });
+            if (!response.ok) continue;
+            const found = compositionsFrom(await response.json());
+            if (found.length) return found;
+        } catch (error) {
+        }
+    }
+
+    return [];
+}
+
+function compositionsFrom(data) {
+    const items = collection(data && (data.compositions || data.files || data.recent || data.items));
+    const source = items.length ? items : collection(data);
+    return source
+        .map((item, index) => ({
+            name: compositionTitle(item, index),
+            path: compositionPath(item)
+        }))
+        .filter(item => item.path);
+}
+
+function mergeCompositions(current, incoming) {
+    const merged = [...current];
+    incoming.forEach(item => {
+        const path = compositionPath(item);
+        if (!path) return;
+        const exists = merged.some(existing => compositionPath(existing) === path);
+        if (!exists) merged.push({
+            name: compositionTitle(item, merged.length),
+            path
+        });
+    });
+    return merged;
+}
+
+function refreshCompositions() {
+    compositionsFetchFailed = false;
+    knownCompositions = [];
+    lastSignature = "";
+    update();
+}
+
+async function fetchDecks() {
+    try {
+        const response = await fetch(`${API}/composition/decks`, { cache: "no-store" });
+        if (!response.ok) return [];
+        return decksFrom(await response.json());
+    } catch (error) {
+        return [];
+    }
+}
+
+async function update() {
+    try {
+        const data = await fetchComposition();
+        const signature = compositionSignature(data);
+        lastComposition = data;
+
+        if (signature !== lastSignature) {
+            lastSignature = signature;
+            renderComposition(data);
+        } else {
+            updateState(data);
+        }
+
+        setStatus("Resolume connected. Auto-detecting composition changes. / Resolume подключен. Изменения композиции определяются автоматически.");
+    } catch (error) {
+        setStatus("No connection to Resolume API. / Нет подключения к API Resolume.", true);
+    }
+}
+
+function forceRefresh() {
+    lastSignature = "";
+    deckFetchFailed = false;
+    compositionsFetchFailed = false;
+    update();
+}
+
+redirectToDomServerWhenAvailable();
+setInterval(update, POLL_MS);
+update();
+</script>
+</body>
+</html>

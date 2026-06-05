@@ -1,0 +1,18 @@
+DOM Control quick start
+
+1. Run start_dom_control.bat on the Windows PC.
+2. On the Windows PC, run ipconfig and find the Wi-Fi IPv4 address.
+3. On the iPad, open:
+   http://PC_WIFI_IPV4:8000/dom_pro2.html
+
+Current example:
+   http://192.168.1.5:8000/dom_pro2.html
+
+Resolume API is controlled from the Windows PC through:
+   http://127.0.0.1:8080/api/v1
+
+If the iPad opens the page but clips do not play:
+- Restart start_dom_control.bat after code changes.
+- In Resolume, make sure the Web/API server is enabled on port 8080.
+- In Resolume, make sure Advanced Output / Fullscreen output is assigned to the projector.
+- Make sure the selected layer opacity is not 0.
