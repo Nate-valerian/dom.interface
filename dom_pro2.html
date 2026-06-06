@@ -42,17 +42,46 @@ body {
     color: var(--text);
     font-family: 'Inter', Arial, sans-serif;
     transition: background 0.4s, color 0.4s;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+        radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--accent), transparent 78%), transparent 34rem),
+        radial-gradient(circle at 12% 22%, color-mix(in srgb, var(--selected), transparent 88%), transparent 24rem),
+        linear-gradient(180deg, color-mix(in srgb, var(--panel), transparent 72%), transparent 42%);
+    opacity: 0.72;
 }
 
 .header {
+    position: relative;
     text-align: center;
     padding: 14px 10px 8px;
 }
 
 .logo {
+    position: relative;
+    display: inline-block;
     font-family: 'Cinzel', serif;
     font-size: 34px;
     letter-spacing: 6px;
+    text-shadow: 0 0 24px color-mix(in srgb, var(--accent), transparent 62%);
+}
+
+.logo::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(105deg, transparent 20%, rgba(255, 255, 255, 0.72) 48%, transparent 72%);
+    mix-blend-mode: screen;
+    transform: translateX(-140%);
+    animation: logoShimmer 5.8s ease-in-out infinite;
 }
 
 .composition-name {
@@ -74,6 +103,7 @@ body {
     border-radius: 12px;
     border: 1px solid var(--accent);
     background: var(--panel);
+    box-shadow: 0 16px 42px color-mix(in srgb, black, transparent 72%);
 }
 
 .preview img.has-image {
@@ -97,6 +127,8 @@ body {
 }
 
 button, .button {
+    position: relative;
+    overflow: hidden;
     min-height: 38px;
     padding: 8px 12px;
     border-radius: 10px;
@@ -104,6 +136,26 @@ button, .button {
     background: transparent;
     color: var(--text);
     font: inherit;
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s, background 0.2s;
+}
+
+button::before, .button::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(105deg, transparent 18%, rgba(255, 255, 255, 0.16) 46%, transparent 70%);
+    transform: translateX(-120%);
+    transition: transform 0.55s ease;
+}
+
+button:hover, .button:hover {
+    border-color: color-mix(in srgb, var(--accent), white 24%);
+    box-shadow: 0 0 20px color-mix(in srgb, var(--accent), transparent 76%);
+}
+
+button:hover::before, .button:hover::before {
+    transform: translateX(120%);
 }
 
 button:active {
@@ -243,10 +295,27 @@ button:active {
 }
 
 .layer {
+    position: relative;
+    overflow: hidden;
     background: var(--panel);
     border: 1px solid color-mix(in srgb, var(--accent), transparent 45%);
     border-radius: 12px;
     padding: 10px;
+    box-shadow: 0 12px 36px color-mix(in srgb, black, transparent 86%);
+}
+
+.layer::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(110deg, transparent 0%, color-mix(in srgb, var(--accent), transparent 91%) 42%, transparent 64%);
+    transform: translateX(-105%);
+    opacity: 0.9;
+}
+
+.layer.sweep::before {
+    animation: layerSweep 1.2s ease-out;
 }
 
 .layer-head {
@@ -300,9 +369,32 @@ button:active {
     transition: background 0.2s, transform 0.2s, border-color 0.2s, box-shadow 0.2s;
 }
 
+.card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: linear-gradient(110deg, transparent 22%, rgba(255, 255, 255, 0.18) 46%, transparent 68%);
+    transform: translateX(-115%);
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--accent), white 18%);
+    box-shadow: 0 10px 28px color-mix(in srgb, black, transparent 76%);
+}
+
+.card:hover::before {
+    animation: cardShimmer 0.9s ease;
+}
+
 .card.active {
     background: var(--active);
     border-color: var(--accent);
+    box-shadow:
+        0 0 0 1px color-mix(in srgb, var(--accent), transparent 40%),
+        0 0 24px color-mix(in srgb, var(--accent), transparent 68%);
 }
 
 .card.selected {
@@ -330,6 +422,8 @@ button:active {
 }
 
 .thumb {
+    position: relative;
+    z-index: 0;
     width: 100%;
     aspect-ratio: 16 / 9;
     object-fit: cover;
@@ -338,6 +432,8 @@ button:active {
 }
 
 .clip-button {
+    position: relative;
+    z-index: 2;
     width: 100%;
     min-height: 48px;
     border: 0;
@@ -352,6 +448,42 @@ button:active {
     padding: 24px 10px;
     text-align: center;
     color: var(--muted);
+}
+
+@keyframes logoShimmer {
+    0%, 56% {
+        transform: translateX(-140%);
+    }
+    72%, 100% {
+        transform: translateX(140%);
+    }
+}
+
+@keyframes layerSweep {
+    from {
+        transform: translateX(-105%);
+    }
+    to {
+        transform: translateX(105%);
+    }
+}
+
+@keyframes cardShimmer {
+    from {
+        transform: translateX(-115%);
+    }
+    to {
+        transform: translateX(115%);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.001ms !important;
+    }
 }
 
 @media (max-width: 620px) {
@@ -378,7 +510,7 @@ button:active {
 
 <div class="app-switcher" aria-label="DOM app switcher">
     <span class="button active" aria-current="page">DOM Control / Управление</span>
-    <a class="button" href="http://localhost:5173">DOM App Admin / Админ</a>
+    <a class="button" id="adminLink" href="http://127.0.0.1:5173">DOM App Admin / Админ</a>
 </div>
 
 <div class="composition-switcher">
@@ -405,12 +537,14 @@ button:active {
 <div class="launch-warning" id="launchWarning"></div>
 <div class="layers" id="layers"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 <script>
 const DOM_SERVER = window.location.protocol === "http" ? window.location.origin : "http://127.0.0.1:8000";
 const API = `${DOM_SERVER}/dom/resolume`;
 const OPENED_FROM_FILE = window.location.protocol === "file:";
 const POLL_MS = 1000;
 const ACTIVE_COMPOSITION_KEY = "domControlActiveCompositionPath";
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 let lastSignature = "";
 let lastComposition = null;
@@ -421,8 +555,70 @@ let compositionsFetchFailed = false;
 let activeCompositionPath = readStoredValue(ACTIVE_COMPOSITION_KEY);
 let selectedClipId = "";
 
+function hasGsap() {
+    return Boolean(window.gsap && !reduceMotion);
+}
+
+function animateIntro() {
+    if (!hasGsap()) return;
+
+    gsap.from(".header, .app-switcher, .composition-switcher, .deck-switcher, .preview, .controls", {
+        y: 12,
+        opacity: 0,
+        duration: 0.65,
+        ease: "power2.out",
+        stagger: 0.055
+    });
+}
+
+function animateRenderedComposition() {
+    if (!hasGsap()) return;
+
+    gsap.from(".layer", {
+        y: 18,
+        opacity: 0,
+        duration: 0.55,
+        ease: "power2.out",
+        stagger: 0.08
+    });
+
+    gsap.from(".card", {
+        y: 12,
+        opacity: 0,
+        scale: 0.985,
+        duration: 0.42,
+        ease: "power2.out",
+        stagger: {
+            each: 0.018,
+            from: "start"
+        }
+    });
+
+    document.querySelectorAll(".layer").forEach((layer, index) => {
+        layer.classList.remove("sweep");
+        window.setTimeout(() => layer.classList.add("sweep"), index * 90);
+    });
+}
+
+function animateSelectedCard(card) {
+    if (!hasGsap() || !card) return;
+
+    gsap.fromTo(card,
+        { scale: 0.985 },
+        { scale: 1, duration: 0.28, ease: "back.out(2.2)" }
+    );
+}
+
 function setTheme(theme) {
     document.body.className = theme === "light" ? "light" : "";
+}
+
+function setPortableLinks() {
+    const adminLink = document.getElementById("adminLink");
+    if (!adminLink) return;
+
+    const host = window.location.hostname || "127.0.0.1";
+    adminLink.href = `http://${host}:5173`;
 }
 
 function collection(value) {
@@ -683,6 +879,7 @@ function renderComposition(data) {
     });
 
     updateState(data);
+    animateRenderedComposition();
 }
 
 function renderDeckSwitcher(data) {
@@ -793,6 +990,7 @@ function markSelectedClip(layerNo, clipNo) {
     if (card) {
         card.classList.add("selected");
         card.setAttribute("aria-current", "true");
+        animateSelectedCard(card);
     }
 }
 
@@ -1083,6 +1281,8 @@ function forceRefresh() {
 }
 
 redirectToDomServerWhenAvailable();
+setPortableLinks();
+animateIntro();
 setInterval(update, POLL_MS);
 update();
 </script>
